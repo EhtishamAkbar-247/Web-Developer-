@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Guessing Game</title>
+    <!-- Importing Google Fonts for that Cyberpunk/Neon look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #0aff0a;
+            --neon-red: #ff3131;
+            --bg-color: #050505;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Grid Animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(transparent 95%, var(--neon-blue) 50%),
+                linear-gradient(90deg, transparent 95%, var(--neon-pink) 50%);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        .game-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #e0e0e0;
+        }
+
+        /* Input Styling */
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #333;
+            outline: none;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: 0 10px 20px -10px var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* Hide Number Spinners */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Advanced Button Styling */
+        .btn {
+            position: relative;
+            padding: 12px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            cursor: pointer;
+            overflow: hidden;
+            transition: 0.2s;
+            margin: 5px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-reset {
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            margin-top: 1rem;
+            display: none; /* Hidden initially */
+        }
+
+        .btn-reset:hover {
+            background: var(--neon-pink);
+            box-shadow: 0 0 30px var(--neon-pink);
+        }
+
+        /* Feedback Messages */
+        #message {
+            min-height: 1.5rem;
+            margin: 1rem 0;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        .success { color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green) !important; }
+        .error { color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red) !important; }
+        .info { color: var(--neon-blue); }
+
+        /* Stats Section */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        /* Copyright Footer */
+        .copyright {
+            margin-top: 3rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 0 5px var(--neon-blue);
+            padding: 10px;
+            border-top: 1px solid rgba(0, 243, 255, 0.3);
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake-anim {
+            animation: shake 0.3s ease-in-out;
+            border-color: var(--neon-red) !important;
+        }
+
+        @media (max-width: 400px) {
+            h1 { font-size: 1.5rem; }
+            .game-container { padding: 1.5rem; width: 95%; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>GUESS NUMBER</h1>
+        <p>Decipher the code (1 - 100)</p>
+
+        <div class="input-group">
+            <input type="number" id="guessInput" placeholder="Enter Number" min="1" max="100">
+        </div>
+
+        <button class="btn" onclick="checkGuess()">Initialize Guess</button>
+        
+        <div id="message">Awaiting Input...</div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Attempts</div>
+                <div class="stat-value" id="attempts">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">High Score</div>
+                <div class="stat-value" id="highScore">-</div>
+            </div>
+        </div>
+
+        <button class="btn btn-reset" id="resetBtn" onclick="resetGame()">Reboot System</button>
+    </div>
+
+    <div class="copyright">
+        @ 2026 Ehtisham Akbar || FA23-BCS-247
+    </div>
+
+    <script>
+        // Game State Variables
+        let targetNumber = generateNumber();
+        let attempts = 0;
+        let bestScore = Infinity;
+        let gameOver = false;
+
+        // DOM Elements
+        const input = document.getElementById('guessInput');
+        const messageDisplay = document.getElementById('message');
+        const attemptsDisplay = document.getElementById('attempts');
+        const highScoreDisplay = document.getElementById('highScore');
+        const resetBtn = document.getElementById('resetBtn');
+        const container = document.querySelector('.game-container');
+
+        // Handle Enter Key
+        input.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess();
+            }
+        });
+
+        function generateNumber() {
+            return Math.floor(Math.random() * 100) + 1;
+        }
+
+        function updateMessage(text, type) {
+            messageDisplay.textContent = text;
+            messageDisplay.className = ''; // Reset classes
+            if (type) messageDisplay.classList.add(type);
+        }
+
+        function checkGuess() {
+            if (gameOver) return;
+
+            const userGuess = parseInt(input.value);
+
+            // Validation
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                updateMessage("Error: Input must be 1-100", "error");
+                container.classList.add('shake-anim');
+                setTimeout(() => container.classList.remove('shake-anim'), 300);
+                return;
+            }
+
+            attempts++;
+            attemptsDisplay.textContent = attempts;
+
+            // Game Logic
+            if (userGuess === targetNumber) {
+                winGame();
+            } else if (userGuess < targetNumber) {
+                updateMessage("Signal too low. Increase output.", "info");
+                input.value = '';
+                input.focus();
+            } else {
+                updateMessage("Signal too high. Decrease output.", "info");
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function winGame() {
+            gameOver = true;
+            updateMessage(`ACCESS GRANTED. Code: ${targetNumber}`, "success");
+            
+            // Visual Win Effects
+            container.style.boxShadow = "0 0 50px var(--neon-green)";
+            container.style.borderColor = "var(--neon-green)";
+            resetBtn.style.display = "inline-block";
+
+            // Update High Score
+            if (attempts < bestScore) {
+                bestScore = attempts;
+                highScoreDisplay.textContent = bestScore;
+            }
+        }
+
+        function resetGame() {
+            targetNumber = generateNumber();
+            attempts = 0;
+            gameOver = false;
+            
+            // UI Reset
+            attemptsDisplay.textContent = '0';
+            updateMessage("System Rebooted. Awaiting Input...", "");
+            input.value = '';
+            resetBtn.style.display = "none";
+            
+            // Restore visual styles
+            container.style.boxShadow = "0 0 20px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.2)";
+            container.style.borderColor = "var(--neon-blue)";
+            
+            input.focus();
+        }
+    </script>
+</body>
+</html>
